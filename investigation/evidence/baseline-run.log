@@ -1,0 +1,23 @@
+(node:38531) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+{
+  "syntheticMessages": 16,
+  "categoryMismatches": 8,
+  "urgencyMismatches": 13,
+  "parserFixtures": 7,
+  "parserMismatches": 4,
+  "liveModelCalls": 0,
+  "simulatedProviderFailures": 17,
+  "reproducedDefects": 10,
+  "reproducerChecks": 10
+}
+REPRODUCED: short outage scored Low
+REPRODUCED: polite widespread outage scored Low
+REPRODUCED: feature sent to billing portal
+REPRODUCED: negated billing in model prose overrides technical category
+REPRODUCED: negated bug in model prose overrides feature category
+REPRODUCED: API failure result has no provenance field
+REPRODUCED: off-hours changes urgency for identical input
+REPRODUCED: short outage escalation helper returns false
+REPRODUCED: long thanks escalation helper returns true
+REPRODUCED: false consensus fixture agrees on billing despite account-compromise report
