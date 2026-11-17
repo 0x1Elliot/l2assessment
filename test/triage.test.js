@@ -6,6 +6,7 @@ import { proposeRoute } from '../server/rule-proposal.js'
 import { assessPolicy } from '../server/routing-policy.js'
 import { resolveRoute, triageMessage } from '../server/triage.js'
 
+const expectedDefaultModel = 'openai/gpt-oss-120b'
 const hours = 'What are your business hours?'
 const outage = 'Our production server is down. All customers are unable to access their accounts. This is affecting our entire business.'
 const compromise = 'Someone changed my sign-in address without permission and is exporting our customer records.'
@@ -125,12 +126,14 @@ for (const [message, category, actionId] of routineFixtures) {
     assert.ok(decision.policyVersion)
     assert.ok(decision.proposalVersion)
     assert.ok(decision.verifier.version)
+    assert.equal(decision.verifier.model, expectedDefaultModel)
     assert.equal(calls.length, 2)
     assert.deepEqual(JSON.parse(calls[0].messages[1].content), { customerMessage: message })
     assert.deepEqual(JSON.parse(calls[1].messages[1].content), {
       customerMessage: message, proposal: { category, actionId },
     })
     for (const call of calls) {
+      assert.equal(call.model, expectedDefaultModel)
       assert.equal(call.messages[0].role, 'system')
       assert.equal(call.messages[1].role, 'user')
       assert.equal(call.response_format.type, 'json_object')
@@ -196,7 +199,7 @@ test('missing credentials require review and preserve model provenance', async (
   assertHold(decision, 'VERIFIER_UNAVAILABLE')
   assert.equal(decision.verifier.status, 'missing_credentials')
   assert.equal(decision.verifier.provider, 'groq')
-  assert.equal(decision.verifier.model, 'llama-3.3-70b-versatile')
+  assert.equal(decision.verifier.model, expectedDefaultModel)
 })
 
 const failedRiskFixtures = [

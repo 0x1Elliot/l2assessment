@@ -1,7 +1,7 @@
 import Groq, { APIConnectionTimeoutError } from 'groq-sdk'
 import { categories, hasExactKeys, routineActions } from './route-catalog.js'
 
-const defaultModel = 'llama-3.3-70b-versatile'
+const defaultModel = 'openai/gpt-oss-120b'
 export const verifierVersion = 'groq-verifier-v1'
 
 const riskLevels = ['low_risk', 'incident', 'security', 'unsafe', 'uncertain']
