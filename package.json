@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "start": "node server/start.js",
+    "test": "node --test"
   },
   "dependencies": {
     "groq-sdk": "^0.37.0",

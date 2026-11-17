@@ -1,121 +1,45 @@
 # Customer Inbox Triage App
 
-## Overview
+Relay AI evaluates customer support messages and recommends the next step. The backend routes suspected production outages to incident review and suspected account compromise or data exposure to security review. It can recommend routine actions after a deterministic proposal, a successful Groq verification, and backend policy approval.
 
-The Customer Inbox Triage app is a lightweight AI-powered tool that helps classify customer support messages and recommend actions. It uses Groq AI to categorize messages, applies rule-based urgency scoring, and suggests next steps based on predefined templates.
+## Run locally
 
-## Problem Statement
+Use Node.js 20.19+ or 22.12+ and npm.
 
-Support teams waste time manually reading and triaging customer messages. This tool provides an automated first pass at classification to help prioritize and route messages more efficiently.
-
-## Tech Stack
-
-- **Frontend**: React + Vite + Tailwind CSS
-- **AI**: Groq API (Llama 3.3 70B - Free tier)
-- **Runtime**: Browser-based (local development only)
-
-## Setup Instructions
-
-### Prerequisites
-
-- Node.js (v16 or higher)
-- npm or yarn
-- Groq API key (FREE - get from https://console.groq.com)
-
-### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd "L2 assessment"
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Configure Groq API Key**
-   
-   Create a `.env.local` file in the root directory:
-   ```bash
-   cp .env.example .env.local
-   ```
-   
-   Edit `.env.local` and add your Groq API key:
-   ```
-   VITE_GROQ_API_KEY=gsk_your-actual-key-here
-   ```
-   
-   Get your FREE API key from: https://console.groq.com/keys
-   
-   **Why Groq?** Groq offers a generous free tier with fast inference and no credit card required!
-
-4. **Run the application**
-   ```bash
-   npm run dev
-   ```
-   
-   The app will be available at `http://localhost:5173`
-
-## How It Works
-
-1. **Paste Message**: User pastes a customer support message into the text area
-2. **Analyze**: Click "Analyze Message" to process the input
-3. **Classification**: The app runs three processes in parallel:
-   - **Category Classification** (LLM): Uses Groq AI (Llama 3.3 70B) to categorize the message
-   - **Urgency Scoring** (Rule-based): Applies simple rules to determine urgency
-   - **Recommendation** (Template-based): Maps category to a recommended action
-4. **Display Results**: Shows category, urgency tag, recommended action, and AI reasoning
-5. **History**: All analyses are saved to localStorage and viewable in the History tab
-
-
-## Example Test Messages
-
-Try analyzing these messages to see how the triage system works:
-
-### Example 1: Production Issue
-```
-Our production server is down
+```bash
+npm ci
+cp .env.example .env.local
+npm run dev
 ```
 
-### Example 2: Customer Feedback
-```
-Hi there! I just wanted to say thank you for your amazing customer service. I've been using your product for three years now and I'm really happy with it. Keep up the great work!
-```
+Open the URL printed by Vite. Groq is optional for startup. See [Groq setup](GROQ-SETUP.md) to enable live verification with a server-side key.
 
-### Example 3: Feature Request
-```
-I would love to see a dark mode option in the app. It would be much easier on my eyes during night time usage.
-```
+To run the built app and backend on the same origin:
 
-### Example 4: Payment Issue
-```
-I tried to update my payment method but the page keeps loading forever. Is this a known issue?
+```bash
+npm run build
+npm start
 ```
 
-### Example 5: Billing Question
-```
-Can I upgrade my subscription to the pro plan?
-```
+The built app listens at `http://127.0.0.1:4173` by default. `npm run preview` also serves the API for local build checks.
 
-### Example 6: Technical Support
-```
-The dashboard won't load when I try to access it. I've tried refreshing but it keeps timing out.
-```
+## Routing decisions
 
-## Security Note
+1. Analyze sends the original message to `POST /api/triage`.
+2. Versioned backend rules propose a route. Independent policy checks the original text for mandatory reviews and for an eligible routine action. Clear mandatory-review and instruction-override matches can be decided locally.
+3. Groq checks risk from the message alone. If the message and proposal qualify for automatic handling, a second prompt evaluates the proposed category and action. Invalid, ungrounded, uncertain, mismatched, or unavailable verdicts require review.
+4. The final decision includes a disposition, reason code, request ID, and evidence and version information. Use **Routing audit** on Analyze or History to inspect it.
 
-⚠️ **Warning**: This application exposes the Groq API key in the browser (using `dangerouslyAllowBrowser: true`). This is acceptable for local development only but should **NEVER** be done in production. In a real application, API calls should be made from a secure backend server.
+The app recommends review and identifies the appropriate team. Completing that handoff is a manual step. Server audit output contains decision metadata and evidence offsets. Browser History stores results and customer text locally, including earlier entries created before the gate. Routing patterns and routine allowlists cover a bounded set of signals. Messages outside that set cannot receive an automatic recommendation.
 
-## Why Groq?
+| Example | Expected disposition |
+| --- | --- |
+| Our production server is down. All customers are unable to access their accounts. | Mandatory incident review |
+| Someone changed my sign-in address without permission and is exporting our customer records. | Mandatory security review |
+| What are your business hours? | Automatic recommendation when Groq verifies it, human review when verification is unavailable |
 
-- ✅ **Completely Free** - No credit card required
-- ✅ **Fast Inference** - Groq's LPU technology is incredibly fast
-- ✅ **Generous Limits** - ~14,400 requests/day on free tier
-- ✅ **High Quality** - Llama 3.3 70B performs excellently
-- ✅ **Easy Signup** - Get started in minutes at https://console.groq.com
+## Checks
 
-## License
+`npm test` runs offline tests for the policy, verifier contracts, failure paths, and HTTP endpoint. `npm run build` builds the frontend. `npm run lint` runs ESLint.
 
-This project is for educational purposes only.
+This project is for educational purposes.
